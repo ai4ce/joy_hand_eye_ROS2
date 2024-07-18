@@ -24,7 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'calibration_client = joy_hand_eye.calibration_client:main'
+            'calibration_client = joy_hand_eye.calibration_client:main',
+            'calibration_server = joy_hand_eye.calibration_server:main',
         ],
     },
 )

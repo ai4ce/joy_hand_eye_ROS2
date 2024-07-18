@@ -1,6 +1,5 @@
 
 import os
-from sklearn import calibration
 import yaml
 
 from launch import LaunchDescription
@@ -77,12 +76,19 @@ def generate_launch_description():
     calibration_client_launch = Node(
         package='joy_hand_eye',
         executable='calibration_client',
-        name='calibration_client',)
+        name='calibration_client')
+    
+    calibration_server_launch = Node(
+        package='joy_hand_eye',
+        executable='calibration_server',
+        name='calibration_server',
+    )
 
     ld.add_action(foxglove_launch)
     # ld.add_action(joy_launch)
     ld.add_action(usbcam_image_server_launch)
     ld.add_action(usbcam_image_client_launch)
     ld.add_action(calibration_client_launch)
+    ld.add_action(calibration_server_launch)
 
     return ld
