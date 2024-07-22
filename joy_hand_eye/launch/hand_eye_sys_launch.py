@@ -20,7 +20,9 @@ from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 def declare_arguments():
     return LaunchDescription(
         [
-            DeclareLaunchArgument("save_folder", default_value="/home/irving/Desktop", description="What folder to save the images to"),
+            DeclareLaunchArgument("save_folder", default_value="/home/zf540/Desktop/save_folder", description="What folder to save the images to"),
+            DeclareLaunchArgument("camera_namespace", default_value="xArm6", description="Namespace of the camera"),
+            DeclareLaunchArgument("camera_name", default_value="D405", description="Name of the camera")
         ]
     )
 
@@ -39,6 +41,8 @@ def load_yaml(package_name, file_name):
 def generate_launch_description():
 
     save_folder_path = LaunchConfiguration("save_folder")
+    camera_namespace = LaunchConfiguration("camera_namespace")
+    camera_name = LaunchConfiguration("camera_name")
 
     ld = LaunchDescription()
     ld.add_entity(declare_arguments())
@@ -73,6 +77,23 @@ def generate_launch_description():
         parameters=[{'save_folder': save_folder_path}],
     )
 
+    realsense_image_server_launch = Node(
+        package='realsense_capture',
+        executable='realsense_image_server',
+        name='realsense_image_server',
+        parameters=[{'camera_namespace': camera_namespace, 
+                     'camera_name': camera_name
+                     }]
+    )
+
+    realsense_image_client_launch = Node(
+        package='realsense_capture',
+        executable='realsense_image_client',
+        name='realsense_image_client',
+        parameters=[{'save_folder': save_folder_path,
+                     }]
+    )
+
     calibration_client_launch = Node(
         package='joy_hand_eye',
         executable='calibration_client',
@@ -84,10 +105,12 @@ def generate_launch_description():
         name='calibration_server',
     )
 
-    ld.add_action(foxglove_launch)
+    # ld.add_action(foxglove_launch)
     # ld.add_action(joy_launch)
-    ld.add_action(usbcam_image_server_launch)
-    ld.add_action(usbcam_image_client_launch)
+    # ld.add_action(usbcam_image_server_launch)
+    # ld.add_action(usbcam_image_client_launch)
+    # ld.add_action(realsense_image_server_launch)
+    # ld.add_action(realsense_image_client_launch)
     ld.add_action(calibration_client_launch)
     ld.add_action(calibration_server_launch)
 

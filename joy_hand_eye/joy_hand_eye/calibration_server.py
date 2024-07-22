@@ -25,13 +25,18 @@ class CalibrationServer(Node):
     def __init__(self):
         super().__init__('calibration_server')  # type: ignore
         
+        ############################ Launch Parameters ########################################
+        # parameter handling
+        self.declare_parameter(name = 'imaging_system', value = 'realsense_capture')
+        self.imaging_system = self.get_parameter('imaging_system').get_parameter_value().string_value
+        
         ############################ Charuco Setup ###################################
         # load the yaml file
-        with open('/home/irving/Desktop/tactile_ws/src/joy_hand_eye_ROS2/joy_hand_eye/config/camera_config.yaml', 'r') as f:
-            self.config = yaml.safe_load(f)
+        # with open('/home/irving/Desktop/tactile_ws/src/joy_hand_eye_ROS2/joy_hand_eye/config/camera_config.yaml', 'r') as f:
+        #     self.config = yaml.safe_load(f)
         self.img_size = None
-        self.k = self.config['camera_matrix']
-        self.d = self.config['distortion_coefficients']
+        # self.k = self.config['camera_matrix']
+        # self.d = self.config['distortion_coefficients']
 
         # construct the charuco board.
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
@@ -85,11 +90,10 @@ class CalibrationServer(Node):
         ############################ Subscriber Setup #################################
         self.image_sub = self.create_subscription(
             msg_type=Image, 
-            topic='/usbcam_capture/captured_rgb_image', 
+            topic=f'/{self.imaging_system}/captured_rgb_image', 
             callback=self.collect_poses_callback, 
             qos_profile=10,
             callback_group=self.my_callback_group)
-
 
 
     def collect_poses_callback(self, msg):
