@@ -10,7 +10,7 @@ from sensor_msgs.msg import Image
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 
-from transforms3d.quaternions import quat2mat
+from scipy.spatial.transform import Rotation
 
 import cv2
 from cv_bridge import CvBridge
@@ -189,9 +189,11 @@ class CalibrationServer(Node):
         translation = np.array([transformstamp.transform.translation.x, transformstamp.transform.translation.y, transformstamp.transform.translation.z])
         quaternion = np.array([transformstamp.transform.rotation.x, transformstamp.transform.rotation.y, transformstamp.transform.rotation.z, transformstamp.transform.rotation.w])
         
-        rotation = quat2mat(quaternion)
+        # convert quaternion to rotation matrix with scipy, which I think is more trustworthy than transforms3d
+        rotation = Rotation.from_quat(quaternion)
+        rotation_matrix = rotation.as_matrix()
 
-        self.get_logger().info(f'Current Gripper Rotation: {rotation}')
+        self.get_logger().info(f'Current Gripper Rotation: {rotation_matrix}')
         self.get_logger().info(f'Current Gripper Translation: {translation}')
         
         self.all_R_gripper2base.append(rotation)
