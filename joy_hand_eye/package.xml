@@ -4,7 +4,7 @@
   <name>joy_hand_eye</name>
   <version>0.0.0</version>
   <description>The package perform hand-eye calibration. It expects the robot to be moved and pictures to be taken using a Joystick connected to the robot</description>
-  <maintainer email="zichuanfang2015@yahoo.com">irving</maintainer>
+  <maintainer email="irving.fang@nyu.edu">Irving Fang</maintainer>
   <license>Apache-2.0</license>
 
   <exec_depend>rclpy</exec_depend>

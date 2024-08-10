@@ -17,9 +17,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='irving',
-    maintainer_email='zichuanfang2015@yahoo.com',
-    description='TODO: Package description',
+    maintainer='Irving Fang',
+    maintainer_email='irving.fang@nyu.edu',
+    description='The package perform hand-eye calibration. It expects the robot to be moved and pictures to be taken using a Joystick connected to the robot',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
