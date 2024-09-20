@@ -1,5 +1,6 @@
 
 import os
+from numpy import imag
 import yaml
 
 from launch import LaunchDescription
@@ -20,9 +21,10 @@ from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 def declare_arguments():
     return LaunchDescription(
         [
-            DeclareLaunchArgument("save_folder", default_value="/home/zf540/Desktop/save_folder", description="What folder to save the images to"),
-            DeclareLaunchArgument("camera_namespace", default_value="xArm6", description="Namespace of the camera"),
-            DeclareLaunchArgument("camera_name", default_value="D405", description="Name of the camera")
+            DeclareLaunchArgument(name='imaging_system', default_value='realsense_capture', description='The imaging system to use'),
+            DeclareLaunchArgument(name='hand_eye_setup', default_value='eye_in_hand', description='What kind of hand-eye setup to use'),
+            DeclareLaunchArgument(name='EEF_link', default_value='link_eef', description='The end effector frame'),
+            DeclareLaunchArgument(name='base_link', default_value='link_base', description='The base frame'),
         ]
     )
 
@@ -40,9 +42,11 @@ def load_yaml(package_name, file_name):
     
 def generate_launch_description():
 
-    save_folder_path = LaunchConfiguration("save_folder")
-    camera_namespace = LaunchConfiguration("camera_namespace")
-    camera_name = LaunchConfiguration("camera_name")
+    imaging_system = LaunchConfiguration('imaging_system')
+    hand_eye_setup = LaunchConfiguration('hand_eye_setup')
+    EEF_link = LaunchConfiguration('EEF_link')
+    base_link = LaunchConfiguration('base_link')
+
 
     ld = LaunchDescription()
     ld.add_entity(declare_arguments())
@@ -64,35 +68,6 @@ def generate_launch_description():
                     # {'autorepeat_rate': 50.0},
                 ],
             )
-    usbcam_image_server_launch = Node(
-        package='usbcam_capture',
-        executable='usbcam_image_server',
-        name='usbcam_image_server',
-    )
-    
-    usbcam_image_client_launch = Node(
-        package='usbcam_capture',
-        executable='usbcam_image_client',
-        name='usbcam_image_client',
-        parameters=[{'save_folder': save_folder_path}],
-    )
-
-    realsense_image_server_launch = Node(
-        package='realsense_capture',
-        executable='realsense_image_server',
-        name='realsense_image_server',
-        parameters=[{'camera_namespace': camera_namespace, 
-                     'camera_name': camera_name
-                     }]
-    )
-
-    realsense_image_client_launch = Node(
-        package='realsense_capture',
-        executable='realsense_image_client',
-        name='realsense_image_client',
-        parameters=[{'save_folder': save_folder_path,
-                     }]
-    )
 
     calibration_client_launch = Node(
         package='joy_hand_eye',
@@ -103,6 +78,12 @@ def generate_launch_description():
         package='joy_hand_eye',
         executable='calibration_server',
         name='calibration_server',
+        parameters=[
+            {'imaging_system': imaging_system},
+            {'hand_eye_setup': hand_eye_setup},
+            {'EEF_link': EEF_link},
+            {'base_link': base_link},
+        ]
     )
 
     # ld.add_action(foxglove_launch)

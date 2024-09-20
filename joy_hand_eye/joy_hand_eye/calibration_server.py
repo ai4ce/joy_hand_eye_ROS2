@@ -29,6 +29,15 @@ class CalibrationServer(Node):
         # parameter handling
         self.declare_parameter(name = 'imaging_system', value = 'realsense_capture')
         self.imaging_system = self.get_parameter('imaging_system').get_parameter_value().string_value
+
+        self.declare_parameter(name = 'hand_eye_setup', value = 'eye_in_hand')
+        self.hand_eye_setup = self.get_parameter('hand_eye_setup').get_parameter_value().string_value
+
+        self.declare_parameter(name='EEF_link', value='link_eef')
+        self.eef_link = self.get_parameter('EEF_link').get_parameter_value().string_value
+
+        self.declare_parameter(name='base_link', value='link_base')
+        self.base_link = self.get_parameter('base_link').get_parameter_value().string_value
         
         ############################ Charuco Setup ###################################
         # load the yaml file
@@ -105,7 +114,10 @@ class CalibrationServer(Node):
 
         if success_flag:
             # get the transform from the gripper to the base
-            gripper2base = self.get_g2b_transform(target_frame='link_base', source_frame='link_eef')
+            if self.hand_eye_setup == 'eye_in_hand':
+                gripper2base = self.get_g2b_transform(target_frame=self.base_link, source_frame=self.eef_link)
+            elif self.hand_eye_setup == 'eye_to_hand':
+                gripper2base = self.get_g2b_transform(target_frame=self.eef_link, source_frame=self.base_link)
             self.process_tf(gripper2base)
 
         self.get_logger().info('Current number of images: %d' % len(self.all_obj_points))
@@ -132,6 +144,12 @@ class CalibrationServer(Node):
             selected_R_target2cam.append(self.all_R_target2cam[i])
             selected_t_target2cam.append(self.all_t_target2cam[i])
         
+        self.get_logger().info('%s' % selected_R_gripper2base)
+        self.get_logger().info('%s' % selected_t_gripper2base)
+        self.get_logger().info('%s' % selected_R_target2cam)
+        self.get_logger().info('%s' % selected_t_target2cam)
+    
+
         R_cam2gripper, t_cam2gripper = cv2.calibrateHandEye(
             R_target2cam=selected_R_target2cam,
             t_target2cam=selected_t_target2cam,
@@ -168,6 +186,9 @@ class CalibrationServer(Node):
         if len(obj_points) != len(img_points):
             self.get_logger().warning('Mismatch between object points and image points. Take another image')
             return
+        if len(obj_points) < 4:
+            self.get_logger().warning('Not enough points detected. Take another image')
+            return
         
         self.all_obj_points.append(obj_points)
         self.all_img_points.append(img_points)
@@ -200,7 +221,7 @@ class CalibrationServer(Node):
         self.get_logger().info(f'Current Gripper Rotation: {rotation_matrix}')
         self.get_logger().info(f'Current Gripper Translation: {translation}')
         
-        self.all_R_gripper2base.append(rotation)
+        self.all_R_gripper2base.append(rotation_matrix)
         self.all_t_gripper2base.append(translation)
 
     def get_g2b_transform(self, target_frame, source_frame):
